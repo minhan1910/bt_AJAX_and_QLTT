@@ -56,10 +56,12 @@ getELE("btnThemNguoiDung").onclick = () => {
  * Form Validation
  */
 
-function isValidForm(taiKhoan, hoTen, matKhau, email, loaiNguoiDung, loaiNgonNgu, moTa, hinhAnh, peopleArray) {
+function isValidForm(taiKhoan, hoTen, matKhau, email, loaiNguoiDung, loaiNgonNgu, moTa, hinhAnh, peopleArray, checkTaiKhoan) {
     let isValid = true;
 
-    isValid &= validation.checkEmpty(taiKhoan, "Tài Khoản Không Được Để Trống!!!", "txtTaiKhoan") && validation.checkDuplicateUsername(taiKhoan, "Trùng tài Khoản !!!", "txtTaiKhoan", peopleArray);
+    if(checkTaiKhoan != 0) {
+        isValid &= validation.checkEmpty(taiKhoan, "Tài Khoản Không Được Để Trống!!!", "txtTaiKhoan") && validation.checkDuplicateUsername(taiKhoan, "Trùng tài Khoản !!!", "txtTaiKhoan", peopleArray);
+    }
 
     isValid &= validation.checkEmpty(hoTen, "Họ Tên Không Được Để Trống!!!", "txtHoTen") && validation.checkFullName(hoTen, "Không chứa số và ký tự đặc biệt", "txtHoTen");
     
@@ -100,7 +102,7 @@ function addPeople() {
             .then(result => {
                 let isValid = true;
 
-                isValid =  isValidForm(taiKhoan, hoTen, matKhau, email, loaiNguoiDung, loaiNgonNgu, moTa, hinhAnh, result.data);
+                isValid =  isValidForm(taiKhoan, hoTen, matKhau, email, loaiNguoiDung, loaiNgonNgu, moTa, hinhAnh, result.data, 1);
 
                 if(isValid) {
                     services 
@@ -169,7 +171,7 @@ function editPerson(id) {
                 console.log(error);
             });
 
-}
+}   
 
 function updatePerson(id) {
     let taiKhoan        = getELE("TaiKhoan").value;
@@ -182,16 +184,33 @@ function updatePerson(id) {
     let moTa            = getELE("MoTa").value;
     let person          = new People(id, taiKhoan, hoTen, matKhau, email, loaiNguoiDung, loaiNgonNgu, moTa, hinhAnh);
 
-    services 
-            .updatePersonApi(person)
+    services    
+            .getListPeopleApi()
             .then(result => {
-                alert("Update successfully!!!!");
-                document.getElementsByClassName("close")[0].click();
-                getListPeople();
+                let isValid = true;
+
+                isValid =  isValidForm(taiKhoan, hoTen, matKhau, email, loaiNguoiDung, loaiNgonNgu, moTa, hinhAnh, result.data, 0);
+                
+                if(isValid) {
+                    services 
+                    .updatePersonApi(person)
+                    .then(result => {
+                            alert("Update successfully!!!!");
+                            document.getElementsByClassName("close")[0].click();
+                            getListPeople();
+                        
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    })
+                }
+
             })
             .catch(error => {
                 console.log(error);
-            })
+            });
+
+ 
 }
 
 /**
